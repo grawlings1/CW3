@@ -39,6 +39,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
   final List<Task> _tasks = [];
   final _formKey = GlobalKey<FormState>();
   
+  int get _completedTaskCount {
+    return _tasks.where((task) => task.isCompleted).length;
+  }
+  
   void _addTask() {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -89,6 +93,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
     );
   }
 
+  void _clearCompletedTasks() {
+    setState(() {
+      _tasks.removeWhere((task) => task.isCompleted);
+    });
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Completed tasks cleared'),
+        backgroundColor: Colors.orange,
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _taskController.dispose();
@@ -105,6 +122,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Task Manager'),
+          actions: [
+            if (_completedTaskCount > 0)
+              IconButton(
+                icon: const Icon(Icons.cleaning_services),
+                tooltip: 'Clear completed tasks',
+                onPressed: _clearCompletedTasks,
+              ),
+          ],
         ),
         body: Column(
           children: [
@@ -139,6 +164,31 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 ),
               ),
             ),
+            if (_tasks.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  children: [
+                    Text(
+                      'Tasks: $_completedTaskCount/${_tasks.length} completed',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: LinearProgressIndicator(
+                        value: _tasks.isEmpty ? 0 : _completedTaskCount / _tasks.length,
+                        backgroundColor: Colors.grey[300],
+                        minHeight: 10,
+                        borderRadius: BorderRadius.circular(5),
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 8),
             Expanded(
               child: _tasks.isEmpty
                   ? const Center(
