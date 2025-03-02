@@ -53,6 +53,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
     });
   }
 
+  void _deleteTask(int index) {
+    setState(() {
+      _tasks.removeAt(index);
+    });
+  }
+
   @override
   void dispose() {
     _taskController.dispose();
@@ -108,6 +114,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                 ? TextDecoration.lineThrough
                                 : null,
                           ),
+                        ),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _deleteTask(index),
                         ),
                       );
                     },
