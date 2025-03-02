@@ -37,9 +37,10 @@ class TaskListScreen extends StatefulWidget {
 class _TaskListScreenState extends State<TaskListScreen> {
   final TextEditingController _taskController = TextEditingController();
   final List<Task> _tasks = [];
+  final _formKey = GlobalKey<FormState>();
   
   void _addTask() {
-    if (_taskController.text.isNotEmpty) {
+    if (_formKey.currentState!.validate()) {
       setState(() {
         _tasks.add(Task(name: _taskController.text));
         _taskController.clear();
@@ -75,23 +76,32 @@ class _TaskListScreenState extends State<TaskListScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _taskController,
-                    decoration: const InputDecoration(
-                      hintText: 'Enter task',
-                      border: OutlineInputBorder(),
+            child: Form(
+              key: _formKey,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _taskController,
+                      decoration: const InputDecoration(
+                        hintText: 'Enter task',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a task';
+                        }
+                        return null;
+                      },
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: _addTask,
-                  child: const Text('Add'),
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: _addTask,
+                    child: const Text('Add'),
+                  ),
+                ],
+              ),
             ),
           ),
           Expanded(
@@ -100,24 +110,30 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 : ListView.builder(
                     itemCount: _tasks.length,
                     itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: Checkbox(
-                          value: _tasks[index].isCompleted,
-                          onChanged: (bool? value) {
-                            _toggleTaskCompletion(index);
-                          },
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
                         ),
-                        title: Text(
-                          _tasks[index].name,
-                          style: TextStyle(
-                            decoration: _tasks[index].isCompleted
-                                ? TextDecoration.lineThrough
-                                : null,
+                        child: ListTile(
+                          leading: Checkbox(
+                            value: _tasks[index].isCompleted,
+                            onChanged: (bool? value) {
+                              _toggleTaskCompletion(index);
+                            },
                           ),
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deleteTask(index),
+                          title: Text(
+                            _tasks[index].name,
+                            style: TextStyle(
+                              decoration: _tasks[index].isCompleted
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deleteTask(index),
+                          ),
                         ),
                       );
                     },
